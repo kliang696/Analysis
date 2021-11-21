@@ -38,7 +38,37 @@ for col in columns:
 # gender vs satisfaction
 sns.countplot(x='satisfaction', hue='Gender', data=df_train)
 plt.title('Count plot for Gender')
-plt.show()
+plt.show()  # about a 50/50 split
 
 # customertype vs satisfaction
-sns.catplot(x='satisfaction', y="Customer Type", kind="swarm", data=df_train)
+sns.countplot(x='satisfaction', hue="Customer Type", data=df_train)
+plt.title('Count plot for Customer Type')
+plt.show()  # seems like loyal customers more likely to give feedback than non-loyal but were more often dissatisfied
+
+# type of travel vs satisfaction
+sns.countplot(x='satisfaction', hue="Type of Travel", data=df_train)
+plt.title('Count plot for Type of Travel')
+plt.show()  # those traveling for business are more likely to be satisfied
+
+# Class vs satisfaction
+sns.countplot(x='satisfaction', hue="Class", data=df_train)
+plt.title('Count plot for Class')
+plt.show()  # those traveling Eco are more likely not satisfied. Business class also more likely to be satisfied
+
+
+# inflight wifi vs satisfaction
+sns.countplot(x='satisfaction', hue="Inflight wifi service", data=df_train)
+plt.title('Count plot for Inflight wifi service')
+plt.show()  # multivariate might prefer a stacked graph. Looks like higher wifi service the low counts of dissatisfaction
+
+# departure/arrival time convenient vs satisfaction
+sns.countplot(x='satisfaction', hue="Departure/Arrival time convenient", data=df_train)
+plt.title('Count plot for Departure/Arrival time convenient')
+plt.show()  # same as above.
+
+for o in columns:
+    sns.countplot(x='satisfaction', hue=o, data=df_train)
+    plt.title('Count plot for' + o)
+plt.show()
+
+
