@@ -32,10 +32,7 @@ plt.show()
 df_train.describe()
 df_train.info()
 
-# if i needed to convert things like gate location food and drink to categorical/objects
-#columns =['Inflight wifi service','Departure/Arrival time convenient','Ease of Online booking','Gate location','Food and drink','Online boarding','Seat comfort','Inflight entertainment','On-board service','Leg room service','Baggage handling','Checkin service','Inflight service','Cleanliness']
-#for col in columns:
-#    df_train.loc[:,col] = df_train.loc[:,col].astype('object')
+columns =['Gender','Customer Type', 'Type of Travel', 'Class','Inflight wifi service','Departure/Arrival time convenient','Ease of Online booking','Gate location','Food and drink','Online boarding','Seat comfort','Inflight entertainment','On-board service','Leg room service','Baggage handling','Checkin service','Inflight service','Cleanliness']
 
 
 # looks good, now we can look at our data.
@@ -91,35 +88,72 @@ from sklearn.model_selection import train_test_split,StratifiedKFold,GridSearchC
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import roc_auc_score, roc_curve
 
 
 # Create Dummy variables for the variables
-df_train=pd.get_dummies(df_train, columns=['Customer Type'])
-df_train=pd.get_dummies(df_train, columns=['Type of Travel'])
-df_train=pd.get_dummies(df_train, columns=['Class'])
-df_train=pd.get_dummies(df_train, columns=['Gender'])
+df_train=pd.get_dummies(df_train, columns=columns, drop_first=True)
+df_test=pd.get_dummies(df_test, columns=columns, drop_first=True)
+def transform_satisfaction(x):
+    if x == 'satisfied':
+        return 1
+    elif x == 'neutral or dissatisfied':
+        return 0
+    else:
+        return -1
+
+
+
+df_train['satisfaction'] = df_train['satisfaction'].apply(transform_satisfaction)
+df_test['satisfaction'] = df_test['satisfaction'].apply(transform_satisfaction)
+
+
 # Create the training and test datasets. At first we use all variables.
 df_train_len=len(df_train)
 train=df_train[:df_train_len]
-X_train=train.drop(labels="satisfaction",axis=1)
+x_train=train.drop(labels="satisfaction",axis=1)
 y_train=train["satisfaction"]
-X_train,X_test,y_train,y_test=train_test_split(X_train,y_train,test_size=0.33,random_state=42)
+x_train,x_test,y_train,y_test=train_test_split(x_train,y_train,test_size=0.33,random_state=42)
 
-print("X_train",len(X_train))
-print("X_test",len(X_test))
+print("x_train",len(x_train))
+print("x_test",len(x_test))
 print("y_train",len(y_train))
 print("y_test",len(y_test))
 print("test",len(test))
 # Initiate the Logistic Regression Model and print the accuracy
 logreg=LogisticRegression()
-logreg.fit(X_train,y_train)
-acc_log_train=round(logreg.score(X_train,y_train)*100,2)
-acc_log_test=round(logreg.score(X_test,y_test)*100,2)
+logreg.fit(x_train,y_train)
+acc_log_train=round(logreg.score(x_train,y_train)*100,2)
+acc_log_test=round(logreg.score(x_test,y_test)*100,2)
 print("Training Accuracy: % {}".format(acc_log_train))
 print("Test Accuracy: % {}".format(acc_log_test))
-# Print the coef's and the intercept's
-print(logreg.coef_, logreg.intercept)
-
+# Print the coef's
+print(logreg.coef_)
+# ROC predictions
+ns_probs = [0 for _ in range(len(y_test))]
+# predict probabilities
+lr_probs = logreg.predict_proba(x_test)
+# keep probabilities for the positive outcome only
+lr_probs = lr_probs[:, 1]
+# calculate scores
+ns_auc = roc_auc_score(y_test, ns_probs)
+lr_auc = roc_auc_score(y_test, lr_probs)
+# summarize scores
+print('No Skill: ROC AUC=%.3f' % (ns_auc))
+print('Logistic: ROC AUC=%.3f' % (lr_auc))
+# calculate roc curves
+ns_fpr, ns_tpr, _ = roc_curve(y_test, ns_probs)
+lr_fpr, lr_tpr, _ = roc_curve(y_test, lr_probs)
+# plot the roc curve for the model
+plt.plot(ns_fpr, ns_tpr, linestyle='--', label='No Skill')
+plt.plot(lr_fpr, lr_tpr, marker='.', label='Logistic')
+# axis labels
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+# show the legend
+plt.legend()
+# show the plot
+plt.show()
 
 
 
