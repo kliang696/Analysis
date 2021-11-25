@@ -69,31 +69,12 @@ sns.countplot(x='satisfaction', hue="Departure/Arrival time convenient", data=df
 plt.title('Count plot for Departure/Arrival time convenient')
 plt.show()  # same as above.
 
-#for o in columns:
-#    sns.countplot(x='satisfaction', hue=o, data=df_train)
-#    plt.title('Count plot for' + o)
-#plt.show()
-
-#plt.figure(figsize=(10,10))
-#list1=["Age",'Inflight wifi service',
-#       'Departure/Arrival time convenient', 'Ease of Online booking',
-#       'Gate location', 'Food and drink', 'Online boarding', 'Seat comfort',
-#       'Inflight entertainment', 'On-board service', 'Leg room service',
-#       'Baggage handling', 'Checkin service', 'Inflight service',
-#       'Cleanliness',"satisfaction"]
-#sns.heatmap(df_train[list1].corr(),annot=True,fmt=".2f")
-#plt.show()
-
-from sklearn.model_selection import train_test_split,StratifiedKFold,GridSearchCV
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import roc_auc_score, roc_curve
-
 
 # Create Dummy variables for the variables
 df_train=pd.get_dummies(df_train, columns=columns, drop_first=True)
 df_test=pd.get_dummies(df_test, columns=columns, drop_first=True)
+
+
 def transform_satisfaction(x):
     if x == 'satisfied':
         return 1
@@ -103,10 +84,15 @@ def transform_satisfaction(x):
         return -1
 
 
-
 df_train['satisfaction'] = df_train['satisfaction'].apply(transform_satisfaction)
 df_test['satisfaction'] = df_test['satisfaction'].apply(transform_satisfaction)
 
+
+from sklearn.model_selection import train_test_split,StratifiedKFold,GridSearchCV
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import roc_auc_score, roc_curve
 
 # Create the training and test datasets. At first we use all variables.
 df_train_len=len(df_train)
