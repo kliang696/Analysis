@@ -122,7 +122,11 @@ print(x_train.columns[selector.get_support(indices=True)])
 # The last 6 features here are important ones for the selection process.
 # We'll create a list of these 6 and put them in our model.
 cat_important=['Type of Travel_Personal Travel', 'Class_Eco', 'Inflight wifi service_5', 'Online boarding_2', 'Online boarding_3', 'Online boarding_5']
+
+
 # Great. now let's find use ANOVA to find the importance of the numerical variables
+
+
 # Initiate the Logistic Regression Model and print the accuracy
 logreg=LogisticRegression()
 logreg.fit(x_train,y_train)
@@ -158,7 +162,7 @@ plt.ylabel('True Positive Rate')
 plt.legend()
 # show the plot
 plt.show()
-
+# Summary page for the model
 import statsmodels.api as sm
 logit_model=sm.Logit(y_train,x_train)
 result=logit_model.fit()
