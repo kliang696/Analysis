@@ -124,6 +124,7 @@ print(x_train.columns[selector.get_support(indices=True)])
 cat_important=['Type of Travel_Personal Travel', 'Class_Eco', 'Inflight wifi service_5', 'Online boarding_2', 'Online boarding_3', 'Online boarding_5']
 
 
+
 # Great. now let's find use ANOVA to find the importance of the numerical variables
 
 
