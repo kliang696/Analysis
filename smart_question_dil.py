@@ -23,7 +23,7 @@ df_train['Arrival Delay in Minutes'].fillna(0, inplace = True)
 df_train.isnull().sum()
 df_test['Arrival Delay in Minutes'].fillna(0, inplace = True)
 df_test.isnull().sum()
-
+# final check
 sns.set_palette("colorblind")
 sns.distplot(df_train['Arrival Delay in Minutes'])
 plt.title("Distribution of Arrival Delay in Minutes")
@@ -31,7 +31,8 @@ plt.show()
 
 df_train.describe()
 df_train.info()
-
+print(df_train.dtypes)
+# let's put the categorical data in the columns variable for later
 columns =['Gender','Customer Type', 'Type of Travel', 'Class','Inflight wifi service','Departure/Arrival time convenient','Ease of Online booking','Gate location','Food and drink','Online boarding','Seat comfort','Inflight entertainment','On-board service','Leg room service','Baggage handling','Checkin service','Inflight service','Cleanliness']
 
 
@@ -70,11 +71,12 @@ plt.title('Count plot for Departure/Arrival time convenient')
 plt.show()  # same as above.
 
 
-# Create Dummy variables for the variables
+# Let's start prep by making Dummy variables for the variables
+# Drop first so to avoid co-linearity
 df_train=pd.get_dummies(df_train, columns=columns, drop_first=True)
 df_test=pd.get_dummies(df_test, columns=columns, drop_first=True)
 
-
+# function for making dummy of 'satisfaction'
 def transform_satisfaction(x):
     if x == 'satisfied':
         return 1
@@ -83,7 +85,7 @@ def transform_satisfaction(x):
     else:
         return -1
 
-
+# Apply function
 df_train['satisfaction'] = df_train['satisfaction'].apply(transform_satisfaction)
 df_test['satisfaction'] = df_test['satisfaction'].apply(transform_satisfaction)
 
@@ -97,7 +99,7 @@ from sklearn.metrics import roc_auc_score, roc_curve
 # Create the training and test datasets. At first we use all variables.
 df_train_len=len(df_train)
 train=df_train[:df_train_len]
-x_train=train.drop(labels="satisfaction",axis=1)
+x_train=train.drop(labels="satisfaction",axis=1) # df with only satisfaction and df with every other variable
 y_train=train["satisfaction"]
 x_train,x_test,y_train,y_test=train_test_split(x_train,y_train,test_size=0.33,random_state=42)
 
