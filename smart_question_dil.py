@@ -73,8 +73,8 @@ plt.show()  # same as above.
 
 # Let's start prep by making Dummy variables for the variables
 # Drop first so to avoid co-linearity
-df_train=pd.get_dummies(df_train, columns=columns, drop_first=True)
-df_test=pd.get_dummies(df_test, columns=columns, drop_first=True)
+df_train_dum=pd.get_dummies(df_train, columns=columns, drop_first=True)
+df_test_dum=pd.get_dummies(df_test, columns=columns, drop_first=True)
 
 # function for making dummy of 'satisfaction'
 def transform_satisfaction(x):
@@ -86,8 +86,8 @@ def transform_satisfaction(x):
         return -1
 
 # Apply function
-df_train['satisfaction'] = df_train['satisfaction'].apply(transform_satisfaction)
-df_test['satisfaction'] = df_test['satisfaction'].apply(transform_satisfaction)
+df_train_dum['satisfaction'] = df_train_dum['satisfaction'].apply(transform_satisfaction)
+df_test_dum['satisfaction'] = df_test_dum['satisfaction'].apply(transform_satisfaction)
 
 
 from sklearn.model_selection import train_test_split,StratifiedKFold,GridSearchCV
@@ -95,19 +95,34 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import roc_auc_score, roc_curve
+from sklearn import preprocessing
+from sklearn.feature_selection import SelectKBest, chi2
 
-# Create the training and test datasets. At first we use all variables.
-df_train_len=len(df_train)
-train=df_train[:df_train_len]
+# Create the training and test datasets.
+df_train_len=len(df_train_dum)
+train=df_train_dum[:df_train_len]
 x_train=train.drop(labels="satisfaction",axis=1) # df with only satisfaction and df with every other variable
 y_train=train["satisfaction"]
 x_train,x_test,y_train,y_test=train_test_split(x_train,y_train,test_size=0.33,random_state=42)
-
 print("x_train",len(x_train))
 print("x_test",len(x_test))
 print("y_train",len(y_train))
 print("y_test",len(y_test))
 print("test",len(test))
+# Let's use chi2 test of importance to find the top 10 categorical features
+r_scaler = preprocessing.MinMaxScaler()
+r_scaler.fit(df_train_dum)
+modified_data = pd.DataFrame(r_scaler.transform(df_train_dum), columns=df_train_dum.columns)
+print(modified_data.head)
+# Chi2, top 10
+selector = SelectKBest(chi2, k=10)
+selector.fit(x_train, y_train)
+x_new = selector.transform(x_train)
+print(x_train.columns[selector.get_support(indices=True)])
+# The last 6 features here are important ones for the selection process.
+# We'll create a list of these 6 and put them in our model.
+cat_important=['Type of Travel_Personal Travel', 'Class_Eco', 'Inflight wifi service_5', 'Online boarding_2', 'Online boarding_3', 'Online boarding_5']
+# Great. now let's find use ANOVA to find the importance of the numerical variables
 # Initiate the Logistic Regression Model and print the accuracy
 logreg=LogisticRegression()
 logreg.fit(x_train,y_train)
@@ -117,6 +132,7 @@ print("Training Accuracy: % {}".format(acc_log_train))
 print("Test Accuracy: % {}".format(acc_log_test))
 # Print the coef's
 print(logreg.coef_)
+
 # ROC predictions
 ns_probs = [0 for _ in range(len(y_test))]
 # predict probabilities
@@ -143,5 +159,9 @@ plt.legend()
 # show the plot
 plt.show()
 
+import statsmodels.api as sm
+logit_model=sm.Logit(y_train,x_train)
+result=logit_model.fit()
+print(result.summary())
 
 
